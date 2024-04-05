@@ -23,8 +23,8 @@
 <style>
 	.modal-background {
 		position: fixed;
-		left: 2em;
-		top: 2em;
+		left: 0;
+		top: 0;
 		width: 100vw;
 		height: 100vh;
 		backdrop-filter: blur(10px);

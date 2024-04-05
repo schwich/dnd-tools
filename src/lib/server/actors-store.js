@@ -27,6 +27,13 @@ export function addPlayer(playerData) {
 	updateStore();
 }
 
+export function addEnemy(enemyData) {
+	const e = new Enemy(enemyData);
+	actors.push(Object.assign({}, e));
+
+	updateStore();
+}
+
 export function changeActorHealth(actorId, changeType, amount) {
 	const actorData = getActor(actorId);
 	let actor = Actor.instantiateByType(actorData);
@@ -42,7 +49,6 @@ export function changeActorHealth(actorId, changeType, amount) {
 		updateActor(actor.id, 'currentHealth', actor.currentHealth);
 		updateActor(actor.id, 'tempHealth', actor.tempHealth);
 	}
-
 }
 
 export function updateActor(actorId, field, value) {

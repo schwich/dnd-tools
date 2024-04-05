@@ -2,6 +2,7 @@
 	import Modal from '$lib/ui/components/Modal.svelte';
 	import { enhance } from '$app/forms';
 	import { percentage } from '../../../lib/util';
+	import { invalidateAll } from '$app/navigation';
 
 	export let data;
 	export let form;
@@ -9,6 +10,42 @@
 	let selectedActor = null;
 
 	let showAddPlayerModal = false;
+
+	let showAddEnemyModal = false;
+	let enemySearchValue = '';
+	let enemySearchInput;
+	let monstersAutoComplete = [];
+	let highlightIndex = null;
+
+	$: if (showAddEnemyModal && enemySearchInput) {
+		enemySearchInput.focus();
+	}
+
+	function postEnemyToServer(monsterName) {
+		fetch('/tracker/builder/addEnemy', {
+			method: 'POST',
+			body: JSON.stringify({ monsterName }),
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		});
+		enemySearchValue = '';
+		showAddEnemyModal = false;
+		monstersAutoComplete = [];
+		highlightIndex = null;
+
+		invalidateAll();
+	}
+
+	async function autocompleteMonster() {
+		if (!enemySearchValue) {
+			monstersAutoComplete = [];
+			return;
+		}
+		const response = await fetch(`/api/monster/search/${encodeURIComponent(enemySearchValue)}`);
+		monstersAutoComplete = await response.json();
+	}
+
 	let showChangeInitiativeModal = false;
 	let showDamageModal = false;
 	let showHealModal = false;
@@ -27,7 +64,25 @@
 	function handleActorChange(actorId) {
 		selectedActorForChange = getActorFromData(actorId);
 	}
+
+	function handleWindowKeydown(e) {
+		if (!showAddEnemyModal) return;
+
+		if (e.key === 'ArrowDown' && highlightIndex <= monstersAutoComplete.length - 1) {
+			highlightIndex === null ? (highlightIndex = 0) : (highlightIndex += 1);
+		} else if (e.key === 'ArrowUp' && highlightIndex !== null) {
+			highlightIndex === 0
+				? (highlightIndex = monstersAutoComplete.length - 1)
+				: (highlightIndex -= 1);
+		} else if (e.key === 'Enter') {
+			postEnemyToServer(monstersAutoComplete[highlightIndex].name);
+		} else {
+			return;
+		}
+	}
 </script>
+
+<svelte:window on:keydown={handleWindowKeydown} />
 
 <div class="container">
 	<div class="action-bar">
@@ -37,7 +92,13 @@
 				showAddPlayerModal = true;
 			}}>add player</button
 		>
-		<button class="btn">add enemy</button>
+		<button
+			class="btn"
+			on:click={() => {
+				showAddEnemyModal = true;
+			}}>add enemy</button
+		>
+		<button class="btn">sort by initiative</button>
 		<button class="btn">long rest</button>
 		<button class="btn">remove enemies</button>
 		<button class="btn">clear list</button>
@@ -181,6 +242,26 @@
 </Modal>
 
 <Modal
+	showModal={showAddEnemyModal}
+	on:modalClosed={() => {
+		showAddEnemyModal = false;
+	}}
+>
+	<input
+		bind:this={enemySearchInput}
+		bind:value={enemySearchValue}
+		on:input={autocompleteMonster}
+	/>
+	{#if monstersAutoComplete.length > 0}
+		<div class="monster-autocomplete-list">
+			{#each monstersAutoComplete as monster, i}
+				<div class:highlighted={highlightIndex === i}>{monster.name}</div>
+			{/each}
+		</div>
+	{/if}
+</Modal>
+
+<Modal
 	showModal={showChangeInitiativeModal}
 	on:modalClosed={() => (showChangeInitiativeModal = false)}
 >
@@ -202,6 +283,10 @@
 </Modal>
 
 <style>
+	.highlighted {
+		background-color: yellow;
+	}
+
 	.container {
 	}
 
@@ -213,10 +298,12 @@
 		display: flex;
 		flex-direction: column;
 		margin-top: 1em;
+		margin-left: 2em;
 		padding: 2em;
 		background-color: #fefefe;
 		max-width: 40vw;
 		box-shadow: 1px 2px 2px 1px rgb(34, 34, 34);
+		max-height: 80vh;
 	}
 
 	.modal-form input {
@@ -231,5 +318,19 @@
 		gap: 10px;
 		box-shadow: 0 0 3px 0 gray;
 		padding: 5px;
+	}
+
+	.monster-autocomplete-list {
+		position: relative;
+		top: 0;
+		left: 0;
+		margin: 0;
+		padding: 0;
+		max-height: 100%;
+		overflow-y: auto;
+		z-index: 1;
+		border: 1px solid #ddd;
+		background-color: #ddd;
+		width: 400px;
 	}
 </style>
