@@ -1,5 +1,6 @@
 <script>
 	import Modal from '$lib/ui/components/Modal.svelte';
+	import DetailPane from './DetailPane.svelte';
 	import { enhance } from '$app/forms';
 	import { percentage } from '../../../lib/util';
 	import { invalidateAll } from '$app/navigation';
@@ -7,7 +8,10 @@
 	export let data;
 	export let form;
 
+	let encounterStarted = false;
+
 	let selectedActor = null;
+	let selectedEnemy = null;
 
 	let showAddPlayerModal = false;
 
@@ -19,6 +23,14 @@
 
 	$: if (showAddEnemyModal && enemySearchInput) {
 		enemySearchInput.focus();
+	}
+
+	async function handleSelectActor(actor) {
+		selectedActor = actor;
+		if (actor.type === 'enemy') {
+			const response = await fetch(`/api/monster/name/${encodeURIComponent(actor.name)}`);
+			selectedEnemy = await response.json();
+		}
 	}
 
 	function postEnemyToServer(monsterName) {
@@ -84,33 +96,38 @@
 
 <svelte:window on:keydown={handleWindowKeydown} />
 
+<div class="action-bar">
+	<button
+		class="btn"
+		on:click={() => {
+			showAddPlayerModal = true;
+		}}>add player</button
+	>
+	<button
+		class="btn"
+		on:click={() => {
+			showAddEnemyModal = true;
+		}}>add enemy</button
+	>
+	<button class="btn">sort by initiative</button>
+	<button class="btn">long rest</button>
+	<button class="btn">roll player initiative</button>
+	<button class="btn">remove enemies</button>
+	<button class="btn">clear list</button>
+	{#if encounterStarted}
+		<button on:click={() => (encounterStarted = false)}>end encounter</button>
+	{:else}
+		<button on:click={() => (encounterStarted = true)}>start encounter</button>
+	{/if}
+</div>
 <div class="container">
-	<div class="action-bar">
-		<button
-			class="btn"
-			on:click={() => {
-				showAddPlayerModal = true;
-			}}>add player</button
-		>
-		<button
-			class="btn"
-			on:click={() => {
-				showAddEnemyModal = true;
-			}}>add enemy</button
-		>
-		<button class="btn">sort by initiative</button>
-		<button class="btn">long rest</button>
-		<button class="btn">remove enemies</button>
-		<button class="btn">clear list</button>
-	</div>
-
 	{#if form?.error}
 		<p class="error">{form.error}</p>
 	{/if}
 
 	<div class="tracker-list">
 		{#each data.actors as actor (actor.id)}
-			<div class="tracker-row" on:click={() => (selectedActor = actor)} role="presentation">
+			<div class="tracker-row" on:click={() => handleSelectActor(actor)} role="presentation">
 				<button
 					on:click={() => {
 						showChangeInitiativeModal = true;
@@ -157,6 +174,7 @@
 			</div>
 		{/each}
 	</div>
+	<DetailPane {selectedEnemy} />
 </div>
 
 <Modal showModal={showDamageModal} on:modalClosed={() => (showDamageModal = false)}>
@@ -287,7 +305,15 @@
 		background-color: yellow;
 	}
 
+	.tracker-list {
+		max-width: 50vw;
+	}
+
 	.container {
+		display: flex;
+		flex-direction: row;
+		margin: 0;
+		width: 100vw;
 	}
 
 	.error {
