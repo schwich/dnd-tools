@@ -1,5 +1,5 @@
 export function postJsonToServer(action, payload) {
-	return fetch(`http://localhost:3000/${action}`, {
+	return fetch(`http://localhost:3001/${action}`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json'

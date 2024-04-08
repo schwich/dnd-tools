@@ -4,11 +4,14 @@
 	import { enhance } from '$app/forms';
 	import { percentage } from '../../../lib/util';
 	import { invalidateAll } from '$app/navigation';
+	import { endEncounter, nextTurn, startEncounter } from '../../../lib/encounter-controller';
 
 	export let data;
 	export let form;
 
-	let encounterStarted = false;
+	let encounterTurnIndex = null;
+	$: console.log(encounterTurnIndex);
+	let encounterIsRunning = false;
 
 	let selectedActor = null;
 	let selectedEnemy = null;
@@ -114,10 +117,28 @@
 	<button class="btn">roll player initiative</button>
 	<button class="btn">remove enemies</button>
 	<button class="btn">clear list</button>
-	{#if encounterStarted}
-		<button on:click={() => (encounterStarted = false)}>end encounter</button>
+	<button class="btn">sync list</button>
+	{#if encounterIsRunning}
+		<button
+			on:click={() => {
+				encounterTurnIndex = nextTurn(data.actors);
+			}}>next turn</button
+		>
+		<button
+			on:click={() => {
+				endEncounter();
+				encounterIsRunning = false;
+			}}
+			>end encounter
+		</button>
 	{:else}
-		<button on:click={() => (encounterStarted = true)}>start encounter</button>
+		<button
+			on:click={() => {
+				startEncounter();
+				encounterIsRunning = true;
+				encounterTurnIndex = 0;
+			}}>start encounter</button
+		>
 	{/if}
 </div>
 <div class="container">
@@ -126,8 +147,13 @@
 	{/if}
 
 	<div class="tracker-list">
-		{#each data.actors as actor (actor.id)}
-			<div class="tracker-row" on:click={() => handleSelectActor(actor)} role="presentation">
+		{#each data.actors as actor, i (actor.id)}
+			<div
+				class:currentTurn={i === encounterTurnIndex}
+				class="tracker-row"
+				on:click={() => handleSelectActor(actor)}
+				role="presentation"
+			>
 				<button
 					on:click={() => {
 						showChangeInitiativeModal = true;
@@ -358,5 +384,9 @@
 		border: 1px solid #ddd;
 		background-color: #ddd;
 		width: 400px;
+	}
+
+	.currentTurn {
+		border: 1px solid yellow;
 	}
 </style>

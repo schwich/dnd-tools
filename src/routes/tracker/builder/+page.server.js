@@ -1,15 +1,9 @@
-import {
-	getActors,
-	addPlayer,
-	updateActor,
-	deleteActor,
-	changeActorHealth
-} from '../../../lib/server/actors-store.js';
+import * as actors from '../../../lib/server/actors-store.js';
 import { fail } from '@sveltejs/kit';
 
 export function load() {
 	return {
-		actors: getActors()
+		actors: actors.getAll()
 	};
 }
 
@@ -28,7 +22,7 @@ export const actions = {
 				throw new Error('actorId cannot be null');
 			}
 
-			updateActor(actorId, 'initiative', initiative);
+			actors.updateActor(actorId, 'initiative', initiative);
 		} catch (error) {
 			return fail(422, {
 				error: error.message,
@@ -51,7 +45,7 @@ export const actions = {
 				throw new Error('player must have a max health');
 			}
 
-			addPlayer({
+			actors.add({
 				id: crypto.randomUUID(),
 				type: 'player',
 				name: String(name),
@@ -69,10 +63,14 @@ export const actions = {
 	},
 	deleteActor: async ({ request }) => {
 		const data = await request.formData();
-		deleteActor(data.get('actorId'));
+		actors.remove(data.get('actorId'));
 	},
 	changeActorHealth: async ({ request }) => {
 		const data = await request.formData();
-		changeActorHealth(data.get('actorId'), data.get('changeType'), parseInt(data.get('amount')));
+		actors.changeActorHealth(
+			data.get('actorId'),
+			data.get('changeType'),
+			parseInt(data.get('amount'))
+		);
 	}
 };

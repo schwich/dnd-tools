@@ -1,5 +1,5 @@
 import { postJsonToServer } from '../util';
-import { Actor, Enemy, Player } from './Actor';
+import { Actor } from '../Actor';
 import { readFileSync, writeFileSync } from 'node:fs';
 
 // relative to project root
@@ -11,29 +11,26 @@ export function getActor(actorId) {
 	return actors.find((actor) => actor.id === actorId);
 }
 
-/**
- *
- * @returns array of actors parsed from JSON, so no access to methods
- */
-export function getActors() {
+export function getAll() {
 	actors = JSON.parse(readFileSync(actorStorePath).toString());
 	return actors;
 }
 
-export function addPlayer(playerData) {
-	const p = new Player(playerData); // construct class to init all data correctly
-	actors.push(Object.assign({}, p)); // sveltekit can't serialize classes
+export function add(actorData) {
+	const a = Actor.instantiateByType(actorData);
+	actors.push(Object.assign({}, a));
+	actors.sort((a, b) => {
+		if (a.initiative === b.initiative) {
+			return 0;
+		} else {
+			return a.initiative < b.initiative ? -1 : 1;
+		}
+	});
 
 	updateStore();
 }
 
-export function addEnemy(enemyData) {
-	const e = new Enemy(enemyData);
-	actors.push(Object.assign({}, e));
-
-	updateStore();
-}
-
+// todo why is this here?
 export function changeActorHealth(actorId, changeType, amount) {
 	const actorData = getActor(actorId);
 	let actor = Actor.instantiateByType(actorData);
@@ -51,6 +48,7 @@ export function changeActorHealth(actorId, changeType, amount) {
 	}
 }
 
+// todo take a map of field -> values
 export function updateActor(actorId, field, value) {
 	const a = getActor(actorId);
 	a[field] = value;
@@ -58,7 +56,7 @@ export function updateActor(actorId, field, value) {
 	updateStore();
 }
 
-export function deleteActor(actorId) {
+export function remove(actorId) {
 	const index = actors.findIndex((actor) => actor.id === actorId);
 	if (index !== -1) {
 		actors.splice(index, 1);
@@ -68,6 +66,6 @@ export function deleteActor(actorId) {
 }
 
 function updateStore() {
+	postJsonToServer('updateTracker', actors);
 	writeFileSync(actorStorePath, JSON.stringify(actors));
-	// postJsonToServer('tracker/addPlayer', actors);
 }

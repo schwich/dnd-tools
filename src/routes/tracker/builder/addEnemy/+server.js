@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { getMonster } from '../../../../lib/server/Monster.js';
-import { addEnemy } from '../../../../lib/server/actors-store.js';
+import { add } from '../../../../lib/server/actors-store.js';
 import { abilityModifier, d20 } from '../../../../lib/dnd/calculate.js';
 
 export async function POST({ request }) {
@@ -8,7 +8,7 @@ export async function POST({ request }) {
 
 	let m = getMonster(monsterName);
 
-	addEnemy({
+	add({
 		id: crypto.randomUUID(),
 		type: 'enemy',
 		name: m.name,
