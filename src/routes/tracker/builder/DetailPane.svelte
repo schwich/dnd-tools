@@ -14,8 +14,6 @@
 			}
 		}
 	}
-
-	$: console.log(selectedEnemy);
 </script>
 
 <div class="details-pane">

@@ -7,7 +7,7 @@
 
 {#if showModal}
 	<div
-		class="modal-background"
+		class="fixed left-0 top-0 w-full h-full backdrop-blur-lg"
 		on:click|self={() => dispatch('modalClosed')}
 		on:keydown={(e) => {
 			if (e.key === 'Escape') {
@@ -16,18 +16,14 @@
 		}}
 		role="presentation"
 	>
-		<slot />
+		<div class="modal-content max-w-sm m-10">
+			<slot />
+		</div>
 	</div>
 {/if}
 
-<style>
-	.modal-background {
-		position: fixed;
-		left: 0;
-		top: 0;
-		width: 100vw;
-		height: 100vh;
-		backdrop-filter: blur(10px);
-		/* background-color: rgba(0, 0, 0, 0.4); */
+<style lang="postcss">
+	.modal-content {
+		@apply drop-shadow-xl  bg-white;
 	}
 </style>

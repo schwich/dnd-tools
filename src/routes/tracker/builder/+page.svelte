@@ -6,11 +6,15 @@
 	import { invalidateAll } from '$app/navigation';
 	import { endEncounter, nextTurn, startEncounter } from '../../../lib/encounter-controller';
 
+	import { actorsStore } from '../../../lib/stores/actor-store';
+	import AddPlayer from './AddPlayer.svelte';
+
 	export let data;
 	export let form;
 
+	let showNewAddPlayerModal = false;
+
 	let encounterTurnIndex = null;
-	$: console.log(encounterTurnIndex);
 	let encounterIsRunning = false;
 
 	let selectedActor = null;
@@ -99,8 +103,11 @@
 
 <svelte:window on:keydown={handleWindowKeydown} />
 
-<div class="action-bar">
-	<button
+<div class="p-2">
+	<!-- <button class="btn" on:click={() => (showNewAddPlayerModal = true)}>new add player</button> -->
+	<a class="btn" href="/tracker/builder/addPlayer">add player</a>
+	<a class="btn" href="/tracker/builder/addEnemy">add enemy</a>
+	<!-- <button
 		class="btn"
 		on:click={() => {
 			showAddPlayerModal = true;
@@ -111,7 +118,7 @@
 		on:click={() => {
 			showAddEnemyModal = true;
 		}}>add enemy</button
-	>
+	> -->
 	<button class="btn">sort by initiative</button>
 	<button class="btn">long rest</button>
 	<button class="btn">roll player initiative</button>
@@ -147,7 +154,8 @@
 	{/if}
 
 	<div class="tracker-list">
-		{#each data.actors as actor, i (actor.id)}
+		<!-- {#each data.actors as actor, i (actor.id)} -->
+		{#each $actorsStore as actor, i (actor.id)}
 			<div
 				class:currentTurn={i === encounterTurnIndex}
 				class="tracker-row"
@@ -326,7 +334,14 @@
 	</form>
 </Modal>
 
-<style>
+<AddPlayer
+	showModal={showNewAddPlayerModal}
+	on:modalClosed={() => {
+		showNewAddPlayerModal = false;
+	}}
+></AddPlayer>
+
+<style lang="postcss">
 	.highlighted {
 		background-color: yellow;
 	}

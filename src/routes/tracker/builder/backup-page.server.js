@@ -1,6 +1,8 @@
 import * as actors from '../../../lib/server/actors-store.js';
 import { fail } from '@sveltejs/kit';
 
+export const ssr = false;
+
 export function load() {
 	return {
 		actors: actors.getAll()
