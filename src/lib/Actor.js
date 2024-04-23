@@ -54,6 +54,10 @@ export class Actor {
 		this.tempHealth = amount;
 	}
 
+	removeTempHealth() {
+		this.tempHealth = 0;
+	}
+
 	healthPercentage() {
 		return Math.round((100 * (this.currentHealth + this.tempHealth)) / this.maxHealth);
 	}
@@ -133,6 +137,13 @@ export class Player extends Actor {
 			conditions,
 			markedNonLethal
 		);
+	}
+
+	longRest() {
+		this.currentHealth = this.maxHealth;
+		this.tempHealth = 0;
+
+		this.determineStatus();
 	}
 
 	determineStatus() {

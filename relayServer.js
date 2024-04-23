@@ -19,7 +19,7 @@ const io = new Server(server, {
 const port = 3001;
 
 let actorsList = [];
-let turnIndex = 0;
+let encounter = { turnIndex: 0, running: false };
 
 io.on('connection', (socket) => {
 	console.log('a user connected');
@@ -30,7 +30,7 @@ io.on('connection', (socket) => {
 
 	if (!socket.recovered) {
 		socket.emit('actorsList', actorsList);
-		socket.emit('turnIndex', turnIndex);
+		socket.emit('encounter', encounter);
 	}
 });
 
@@ -40,11 +40,9 @@ app.post('/updateTracker', (req, res) => {
 	res.sendStatus(200);
 });
 
-app.post('/updateTracker/:turnIndex', (req, res) => {
-	actorsList = req.body;
-	turnIndex = parseInt(req.params.turnIndex);
-	io.emit('actorsList', actorsList);
-	io.emit('turnIndex', req.params.turnIndex);
+app.post('/updateEncounter', (req, res) => {
+	encounter = req.body;
+	io.emit('encounter', encounter);
 	res.sendStatus(200);
 });
 

@@ -2,21 +2,25 @@
 	import { actorsStore } from '../../../../lib/stores/actor-store';
 	import { Player } from '../../../../lib/Actor';
 	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
 
 	let playerName;
+	let playerNameInput;
 	let maxHealth;
 	let initiative;
+
+	onMount(() => {
+		playerNameInput.focus();
+	});
 </script>
 
-<!-- svelte-ignore a11y-autofocus -->
 <input
-	autofocus
 	class=""
+	bind:this={playerNameInput}
 	bind:value={playerName}
 	type="text"
 	autocomplete="off"
 	placeholder="player name"
-	required
 />
 <input bind:value={maxHealth} type="number" placeholder="max health" required />
 <input bind:value={initiative} type="number" placeholder="initiative" />

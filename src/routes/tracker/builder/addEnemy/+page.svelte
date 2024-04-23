@@ -3,12 +3,17 @@
 	import { actorsStore } from '../../../../lib/stores/actor-store';
 	import { Enemy } from '../../../../lib/Actor';
 	import { abilityModifier, d20 } from '../../../../lib/dnd/calculate';
+	import { onMount } from 'svelte';
+
+	let searchInput;
 
 	let searchValue = '';
 	let searchResults = [];
 	let highlightIndex = null;
 
-	$: console.log(`highlightIndex=${highlightIndex}`);
+	onMount(() => {
+		searchInput.focus();
+	});
 
 	$: if (searchValue) {
 		fetch(`/api/monster/search/${encodeURIComponent(searchValue)}`)
@@ -37,7 +42,6 @@
 			} else if (e.key === 'Enter') {
 				const m = searchResults[highlightIndex];
 				if (m) {
-					console.log(m);
 					actorsStore.add(
 						new Enemy({
 							id: crypto.randomUUID(),
@@ -56,7 +60,12 @@
 />
 
 <!-- svelte-ignore a11y-autofocus -->
-<input autocomplete="off" bind:value={searchValue} placeholder="Monster Name..." />
+<input
+	bind:this={searchInput}
+	autocomplete="off"
+	bind:value={searchValue}
+	placeholder="Monster Name..."
+/>
 {#if searchResults.length > 0}
 	<div>
 		{#each searchResults as monster, i}
