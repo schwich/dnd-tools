@@ -3,6 +3,8 @@
 
 	export let selectedEnemy;
 
+	$: console.log(selectedEnemy.spellcasting);
+
 	function renderAc(acEntry) {
 		if (typeof acEntry === 'number') {
 			return acEntry;
@@ -82,7 +84,10 @@
 
 						{#if spellcastingType.spells}
 							{#each Object.entries(spellcastingType.spells) as spellsAndType}
-								<h4>{spellsAndType[0]}</h4>
+								<h4>Level: {spellsAndType[0]}</h4>
+								{#if spellsAndType[1].slots}
+									<h5>Slots: {spellsAndType[1].slots}</h5>
+								{/if}
 								<p>{spellsAndType[1].spells}</p>
 							{/each}
 						{/if}
